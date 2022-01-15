@@ -62,10 +62,10 @@ nypostarticlephrases <- spacy_tokenize(nypostarticleQQ, #If you use quanteda you
                                        # (removes trailing spaces)
 )
 
-v_phrases <- unlist(nypostarticlephrases)
-numphrases <- length(v_phrases) #8,975 sentences
-sum(v_phrases=="") #1
-v_phrases <- v_phrases[-which(v_phrases=="")] #8,974 sentences
+v_nypostarticlephrases <- unlist(nypostarticlephrases)
+numnypostarticlephrases <- length(v_nypostarticlephrases) #8,975 sentences
+sum(v_nypostarticlephrases=="") #1
+v_nypostarticlephrases <- v_nypostarticlephrases[-which(v_nypostarticlephrases=="")] #8,974 sentences
 
-
+#changes I will remove later
 
