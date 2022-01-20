@@ -25,47 +25,47 @@ thehillarticle = thehillpage %>% html_nodes("p") %>% html_text()
 thehillarticle
 
 #remove lines that are not part of the main article
-nypostarticleQ = nypostarticle[2:13]
-nypostarticleQ
+nypostarticle = nypostarticle[2:13]
+nypostarticle
 
-thehillarticleQ = thehillarticle[2:17]
-thehillarticleQ
+thehillarticle = thehillarticle[2:16]
+thehillarticle
 
 ##Some basic checks
 #Check UTF-8 encoding: aiming for character(0)
-nypostarticleQ[!utf8_valid(nypostarticleQ)] 
-thehillarticleQ[!utf8_valid(thehillarticleQ)]
-
+nypostarticle[!utf8_valid(nypostarticle)] 
+thehillarticle[!utf8_valid(thehillarticle)]
 
 #Check character normalization. Specifically, the normalized composed form (NFC): 0 means all right. The text is in NFC.
-nypostarticleQ_NFC <- utf8_normalize(nypostarticleQ)
-sum(nypostarticleQ_NFC != nypostarticleQ)
-thehillarticleQ_NFC <- utf8_normalize(thehillarticleQ)
-sum(thehillarticleQ_NFC != thehillarticleQ)
+nypostarticle_NFC <- utf8_normalize(nypostarticle)
+sum(nypostarticle_NFC != nypostarticle)
+thehillarticle_NFC <- utf8_normalize(thehillarticle)
+sum(thehillarticle_NFC != thehillarticle)
 
 #replace doubled or more spaces by unique spaces
-nypostarticleQQ <- gsub("[ ]{2,}", " ", nypostarticleQ)
-nypostarticleQQ
-thehillarticleQQ <- gsub("[ ]{2,}", " ", thehillarticleQ)
-thehillarticleQQ
+nypostarticle <- gsub("[ ]{2,}", " ", nypostarticle)
+nypostarticle
+thehillarticle <- gsub("[ ]{2,}", " ", thehillarticle)
+thehillarticle
 
+#install spacy and english language model
 spacy_install() 
 spacy_download_langmodel('en') 
 
-#Gets sentences from paragraphs
-nypostarticlephrases <- spacy_tokenize(nypostarticleQQ, #If you use quanteda you can use
-                                       # corpus_reshape(corpus, to = "sentences"))
-                                       #Taks a while.
-                                       #Returns a list with 138 elements, each one
-                                       # is a string vector.
-                                       what="sentence" #By default remove_separators = TRUE
-                                       # (removes trailing spaces)
-)
-
+#Gets single non-empty sentences/phrases from the extracted paragraphs of NYPost article
+nypostarticlephrases <- spacy_tokenize(nypostarticle, what="sentence")
 v_nypostarticlephrases <- unlist(nypostarticlephrases)
-numnypostarticlephrases <- length(v_nypostarticlephrases) #8,975 sentences
-sum(v_nypostarticlephrases=="") #1
-v_nypostarticlephrases <- v_nypostarticlephrases[-which(v_nypostarticlephrases=="")] #8,974 sentences
+numnypostarticlephrases <- length(v_nypostarticlephrases) #21
+sum(v_nypostarticlephrases=="") #1 sentence empty
+v_nypostarticlephrases <- v_nypostarticlephrases[-which(v_nypostarticlephrases=="")] #20 sentences
+v_nypostarticlephrases
 
-#changes I will remove later
+#repeat for TheHill article
+thehillarticlephrases <- spacy_tokenize(thehillarticle, what ="sentence")
+v_thehillarticlephrases <- unlist(thehillarticlephrases)
+numthehillarticlephrases <- length(v_thehillarticlephrases) #48
+sum(v_thehillarticlephrases=="") #17
+v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")]
+v_thehillarticlephrases
+
 
