@@ -1,12 +1,15 @@
 #installing packages if not done yet
 install.packages("rvest")
 install.packages("dplyr")
+install.packages("syuzhet")
 
 #loading libraries
 library(rvest)
 library(dplyr)
 library(utf8)
 library(spacyr)
+library(syuzhet)
+library(ggplot2)
 
 ##Webscraping the two relevant news articles
 #create new variable for the link and get html document of this webpage
@@ -44,28 +47,50 @@ sum(thehillarticle_NFC != thehillarticle)
 
 #replace doubled or more spaces by unique spaces
 nypostarticle <- gsub("[ ]{2,}", " ", nypostarticle)
-nypostarticle
 thehillarticle <- gsub("[ ]{2,}", " ", thehillarticle)
-thehillarticle
 
-#install spacy and english language model
+#install spacy  and english language model
 spacy_install() 
 spacy_download_langmodel('en') 
 
 #Gets single non-empty sentences/phrases from the extracted paragraphs of NYPost article
 nypostarticlephrases <- spacy_tokenize(nypostarticle, what="sentence")
 v_nypostarticlephrases <- unlist(nypostarticlephrases)
-numnypostarticlephrases <- length(v_nypostarticlephrases) #21
+length(v_nypostarticlephrases) #21 sentences
 sum(v_nypostarticlephrases=="") #1 sentence empty
 v_nypostarticlephrases <- v_nypostarticlephrases[-which(v_nypostarticlephrases=="")] #20 sentences
-v_nypostarticlephrases
+length(v_nypostarticlephrases)
 
 #repeat for TheHill article
 thehillarticlephrases <- spacy_tokenize(thehillarticle, what ="sentence")
 v_thehillarticlephrases <- unlist(thehillarticlephrases)
-numthehillarticlephrases <- length(v_thehillarticlephrases) #48
-sum(v_thehillarticlephrases=="") #17
-v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")]
-v_thehillarticlephrases
+length(v_thehillarticlephrases) #45
+sum(v_thehillarticlephrases=="") #16 sentences empty
+v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")] #29 sentences
+length(v_thehillarticlephrases)
+
+#obtaining sentiment scores for NYPost article
+sentimentscoresnypost <- get_nrc_sentiment(v_nypostarticlephrases)
+
+cbind(v_thehillarticlephrases, sentimentscores)
+
+barplot(colSums(sentimentscoresnypost), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for NYPost article' )
+
+#obtaining sentiment scores for TheHill article
+sentimentscoresthehill <- get_nrc_sentiment(v_thehillarticlephrases)
+
+cbind(v_thehillarticlephrases, sentimentscoresthehill)
+
+barplot(colSums(sentimentscoresthehill), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for TheHill article' )
 
 
+colSums(sentimentscoresnypost)
+sentiments <- data.frame(cbind(colSums(sentimentscoresnypost), colSums(sentimentscoresthehill)))
+sentiments <- t(sentiments)
+sentimenst<- as.data.frame(sentiments)
+sentiments
+ggplot(sentiments, aes(X1, X2)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Multiple Bar plots")
+
+barplot(sentiments, las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for TheHill article' )
