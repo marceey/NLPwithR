@@ -72,7 +72,7 @@ length(v_thehillarticlephrases)
 #obtaining sentiment scores for NYPost article
 sentimentscoresnypost <- get_nrc_sentiment(v_nypostarticlephrases)
 
-cbind(v_thehillarticlephrases, sentimentscores)
+cbind(v_nypostarticlephrases, sentimentscoresnypost)
 
 barplot(colSums(sentimentscoresnypost), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for NYPost article' )
 
@@ -84,13 +84,29 @@ cbind(v_thehillarticlephrases, sentimentscoresthehill)
 barplot(colSums(sentimentscoresthehill), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for TheHill article' )
 
 
-colSums(sentimentscoresnypost)
-sentiments <- data.frame(cbind(colSums(sentimentscoresnypost), colSums(sentimentscoresthehill)))
-sentiments <- t(sentiments)
-sentimenst<- as.data.frame(sentiments)
-sentiments
-ggplot(sentiments, aes(X1, X2)) +
+sentiments <- data.frame(cbind(colSums(sentimentscoresnypost), colSums(sentimentscoresthehill))) 
+
+sentimentsstacked <- data.frame(
+  "article" = "NYPost",
+  "sentiments" = c("anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive"),
+  "scores" = sentiments[ ,1])
+sentimentsstacked2 <- data.frame(
+  "article" = "TheHill",
+  "sentiments" = c("anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive"),
+  "scores" = sentiments[ ,2])
+sentimentsstacked3 <- rbind(sentimentsstacked, sentimentsstacked2)
+
+##plotting a two-key barplot to compare the articles
+ggplot(sentimentsstacked3, aes(x = sentiments, y = scores, fill = article)) +
   geom_bar(stat="identity", position = "dodge") +
   labs(title="Multiple Bar plots")
 
-barplot(sentiments, las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for TheHill article' )
+sentimentsstacked3$relativescore[sentimentsstacked3§article == 'NYPost'] <- scores%119
+sentimentsstacked[ ,3] <- lapply(sentimentsstacked[ ,3], curve((\(x) x/119)(x)))
+sentimentsstacked <- sentimentsstacked %>% mutate_at(c("scores"), funs(relativescore = ./119))
+sentimentsstacked2 <- sentimentsstacked2 %>% mutate_at(c("scores"), funs(relativescore = ./303))
+sentimentsstacked3 <- rbind(sentimentsstacked, sentimentsstacked2)
+ggplot(sentimentsstacked3, aes(x = sentiments, y = relativescore, fill = article)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Multiple Bar plots Relativescore")
+
