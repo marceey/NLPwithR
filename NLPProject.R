@@ -64,49 +64,52 @@ length(v_nypostarticlephrases)
 #repeat for TheHill article
 thehillarticlephrases <- spacy_tokenize(thehillarticle, what ="sentence")
 v_thehillarticlephrases <- unlist(thehillarticlephrases)
-length(v_thehillarticlephrases) #45
+length(v_thehillarticlephrases) #44
 sum(v_thehillarticlephrases=="") #16 sentences empty
-v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")] #29 sentences
+v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")] #28 sentences
 length(v_thehillarticlephrases)
 
-#obtaining sentiment scores for NYPost article
+#obtaining sentiment scores for NYPost article and plotting them
 sentimentscoresnypost <- get_nrc_sentiment(v_nypostarticlephrases)
 
 cbind(v_nypostarticlephrases, sentimentscoresnypost)
 
-barplot(colSums(sentimentscoresnypost), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for NYPost article' )
+barplot(sort(colSums(sentimentscoresnypost), decreasing = TRUE), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for NYPost article')
 
-#obtaining sentiment scores for TheHill article
+#obtaining sentiment scores for TheHill article and plotting them
 sentimentscoresthehill <- get_nrc_sentiment(v_thehillarticlephrases)
 
 cbind(v_thehillarticlephrases, sentimentscoresthehill)
 
-barplot(colSums(sentimentscoresthehill), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for TheHill article' )
+barplot(sort(colSums(sentimentscoresthehill), decreasing = TRUE), las=2, col = rainbow(10), ylab = 'count', main ='Sentiment Scores for TheHill article')
 
 
-sentiments <- data.frame(cbind(colSums(sentimentscoresnypost), colSums(sentimentscoresthehill))) 
+#combining both sentiment scores in one dataframe to plot a two-keyed barplot
 
-sentimentsstacked <- data.frame(
+sentimentdf <- data.frame(cbind(colSums(sentimentscoresnypost), colSums(sentimentscoresthehill))) 
+
+sentimentdfnyp <- data.frame(
   "article" = "NYPost",
   "sentiments" = c("anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive"),
-  "scores" = sentiments[ ,1])
-sentimentsstacked2 <- data.frame(
+  "scores" = sentimentdf[ ,1])
+sentimentdfthehill <- data.frame(
   "article" = "TheHill",
   "sentiments" = c("anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive"),
-  "scores" = sentiments[ ,2])
-sentimentsstacked3 <- rbind(sentimentsstacked, sentimentsstacked2)
+  "scores" = sentimentdf[ ,2])
+sentimentdfboth <- rbind(sentimentdfnyp, sentimentdfthehill)
 
-##plotting a two-key barplot to compare the articles
-ggplot(sentimentsstacked3, aes(x = sentiments, y = scores, fill = article)) +
+##plotting a two-key barplot to compare the articles absolutes scores
+ggplot(sentimentdfboth, aes(x = sentiments, y = scores, fill = article)) +
   geom_bar(stat="identity", position = "dodge") +
   labs(title="Multiple Bar plots")
 
-sentimentsstacked3$relativescore[sentimentsstacked3§article == 'NYPost'] <- scores%119
-sentimentsstacked[ ,3] <- lapply(sentimentsstacked[ ,3], curve((\(x) x/119)(x)))
-sentimentsstacked <- sentimentsstacked %>% mutate_at(c("scores"), funs(relativescore = ./119))
-sentimentsstacked2 <- sentimentsstacked2 %>% mutate_at(c("scores"), funs(relativescore = ./303))
-sentimentsstacked3 <- rbind(sentimentsstacked, sentimentsstacked2)
-ggplot(sentimentsstacked3, aes(x = sentiments, y = relativescore, fill = article)) +
+#modyfing the scores to relative scores for better comparability
+sentimentdfnyp <- sentimentdfnyp %>% mutate_at(c("scores"), funs(relativescore = ./sum(scores)))
+sentimentdfthehill <- sentimentdfthehill %>% mutate_at(c("scores"), funs(relativescore = ./sum(scores)))
+sentimentdfboth <- rbind(sentimentdfnyp, sentimentdfthehill)
+
+##plotting a two-key barplot to compare the articles relative scores
+ggplot(sentimentdfboth, aes(x = sentiments, y = relativescore, fill = article)) +
   geom_bar(stat="identity", position = "dodge") +
   labs(title="Multiple Bar plots Relativescore")
 
