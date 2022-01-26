@@ -8,6 +8,8 @@
 #install.packages("tidytext")
 #install.packages("tidyverse
 #install.packages("textdata")
+install.packages("wordcloud")
+install.packages("RColorBrewer")
 
 #loading libraries
 library(rvest)
@@ -19,6 +21,9 @@ library(ggplot2)
 library(tidytext)
 library(tidyverse)
 library(textdata)
+library(wordcloud)
+library(RColorBrewer)
+
 
 ##Webscraping the two relevant news articles
 #create new variable for the link and get html document of this webpage
@@ -123,21 +128,25 @@ ggplot(sentimentdfboth, aes(x = sentiments, y = relativescore, fill = article)) 
   labs(title="Multiple Bar plots Relativescore")
 
 
-
-
-
 ## sentiment analysis with the tidytext package 
-## getting some insights on top wordsfor sentiments
+## getting some insights on top words for sentiments
 #for NYPostarticle get word with count of sentiment from bing lexicon
 nyposttext.df <- tibble(text = str_to_lower(v_nypostarticlephrases))
 nypostbingwordcount <- nyposttext.df %>% unnest_tokens(output = word, input = text) %>%
   inner_join(get_sentiments("bing")) %>%
   count(word, sentiment, sort = TRUE) 
 
+#WordCloud for the bing sentiments
+par(mar=c(1,1,1,1))
+wordcloud(words = filter(nypostbingwordcount, sentiment == "positive")$word, freq = nypostbingwordcount$n, min.freq = 1, max.words = 100, colors=brewer.pal(8, "Dark2"))
+title(main= "NYPost article positive bing sentiment wordcloud", font.main = 1, cex.main = 1.5)
+wordcloud(words = filter(nypostbingwordcount, sentiment == "negative")$word, freq = nypostbingwordcount$n, min.freq = 1, max.words = 100, colors=brewer.pal(8, "Dark2"))
+title(main= "NYPost article negative bing sentiment wordcloud", font.main = 1, cex.main = 1.5)
+
 # Top 10 words by sentiment for bing nypost
 nyposttop10bingwords <- nypostbingwordcount %>% 
   group_by(sentiment) %>% 
-  slice_max(order_by = n, n = 10) %>% 
+  slice_max(order_by = n, n=10, with_ties = FALSE) %>% 
   ungroup() %>% 
   mutate(word = reorder(word, n)) 
 
@@ -155,9 +164,14 @@ thehillbingwordcount <- thehilltext.df %>% unnest_tokens(output = word, input = 
   inner_join(get_sentiments("bing")) %>%
   count(word, sentiment, sort = TRUE) 
 
+wordcloud(words = filter(thehillbingwordcount, sentiment == "positive")$word, freq = thehillwordcount$n, min.freq = 1, max.words = 100, colors=brewer.pal(8, "Dark2"))
+title(main= "TheHill article positive bing sentiment wordcloud", font.main = 1, cex.main = 1.5)
+wordcloud(words = filter(thehillbingwordcount, sentiment == "negative")$word, freq = thehillwordcount$n, min.freq = 1, max.words = 100, colors=brewer.pal(8, "Dark2"))
+title(main= "TheHill article negative bing sentiment wordcloud", font.main = 1, cex.main = 1.5)
+
 thehilltop10bingwords <- thehillbingwordcount %>% 
   group_by(sentiment) %>% 
-  slice_max(order_by = n, n = 10) %>% 
+  slice_max(order_by = n, n = 10,with_ties = FALSE) %>% 
   ungroup() %>% 
   mutate(word = reorder(word, n)) 
 
