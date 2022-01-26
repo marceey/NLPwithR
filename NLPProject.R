@@ -1,7 +1,8 @@
-#installing packages if not done yet
-install.packages("rvest")
-install.packages("dplyr")
-install.packages("syuzhet")
+##installing packages if not done yet
+#install.packages("dplyr")
+#install.packages("syuzhet")
+#install.packages("tidytext")
+#install.packages("textdata")
 
 #loading libraries
 library(rvest)
@@ -10,6 +11,8 @@ library(utf8)
 library(spacyr)
 library(syuzhet)
 library(ggplot2)
+library(tidytext)
+library(tidyverse)
 
 ##Webscraping the two relevant news articles
 #create new variable for the link and get html document of this webpage
@@ -113,3 +116,86 @@ ggplot(sentimentdfboth, aes(x = sentiments, y = relativescore, fill = article)) 
   geom_bar(stat="identity", position = "dodge") +
   labs(title="Multiple Bar plots Relativescore")
 
+
+
+
+
+## sentiment analysis with the tidytext package 
+## getting some insights on top wordsfor sentiments
+#for NYPostarticle get word with count of sentiment from bing lexicon
+nyposttext.df <- tibble(text = str_to_lower(v_nypostarticlephrases))
+nypostbingwordcount <- nyposttext.df %>% unnest_tokens(output = word, input = text) %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) 
+
+# Top 10 words by sentiment for bing nypost
+nyposttop10bingwords <- nypostbingwordcount %>% 
+  group_by(sentiment) %>% 
+  slice_max(order_by = n, n = 10) %>% 
+  ungroup() %>% 
+  mutate(word = reorder(word, n)) 
+
+# create a barplot showing the Top 10 words by sentiment for bing nypost
+nyposttop10bingwords %>% 
+  ggplot(aes(word, n, fill = sentiment)) + 
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~sentiment, scales = "free_y") + 
+  labs(y = "Top 10 words by Sentiment for NYPost article with bing lexicon", x = NULL) + 
+  coord_flip() 
+
+#repeating for TheHill article
+thehilltext.df <- tibble(text = str_to_lower(v_thehillarticlephrases))
+thehillbingwordcount <- thehilltext.df %>% unnest_tokens(output = word, input = text) %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) 
+
+thehilltop10bingwords <- thehillbingwordcount %>% 
+  group_by(sentiment) %>% 
+  slice_max(order_by = n, n = 10) %>% 
+  ungroup() %>% 
+  mutate(word = reorder(word, n)) 
+
+thehilltop10bingwords %>% 
+  ggplot(aes(word, n, fill = sentiment)) + 
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~sentiment, scales = "free_y") + 
+  labs(y = "Top 10 words by Sentiment for TheHill article with bing lexicon", x = NULL) + 
+  coord_flip() 
+
+#for NYPostarticle get word with count of sentiment from loughran lexicon
+nypostloughranwordcounts <- nyposttext.df %>% unnest_tokens(output = word, input = text) %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) 
+
+# Top 10 words by sentiment for laughran nypost
+nyposttop10loughranwords <- nypostloughranwordcounts %>% 
+  group_by(sentiment) %>% 
+  slice_max(order_by = n, n = 10, with_ties = FALSE) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n))
+
+# create a barplot showing the Top 10 words by sentiment for loughran nypost
+nyposttop10loughranwords %>% 
+  ggplot(aes(word, n, fill = sentiment)) + 
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~sentiment, scales = "free_y") + 
+  labs(y = "Top 10 words by Sentiment for NYPost article with loughran lexicon", x = NULL) + 
+  coord_flip() 
+
+#repeating for theHill article
+thehillloughranwordcounts <- thehilltext.df %>% unnest_tokens(output = word, input = text) %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) 
+
+thehilltop10loughranwords <- thehillloughranwordcounts %>% 
+  group_by(sentiment) %>% 
+  slice_max(order_by = n, n = 10, with_ties = FALSE) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n))
+
+thehilltop10loughranwords %>% 
+  ggplot(aes(word, n, fill = sentiment)) + 
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~sentiment, scales = "free_y") + 
+  labs(y = "Top 10 words by Sentiment for TheHill article with loughran lexicon", x = NULL) + 
+  coord_flip() 
