@@ -1,7 +1,12 @@
 ##installing packages if not done yet
+#install.packages("rvest")
 #install.packages("dplyr")
+#install.packages("utf8")
+#install.packages("spacyr")
 #install.packages("syuzhet")
+#install.packages("ggplot2")
 #install.packages("tidytext")
+#install.packages("tidyverse
 #install.packages("textdata")
 
 #loading libraries
@@ -13,6 +18,7 @@ library(syuzhet)
 library(ggplot2)
 library(tidytext)
 library(tidyverse)
+library(textdata)
 
 ##Webscraping the two relevant news articles
 #create new variable for the link and get html document of this webpage
