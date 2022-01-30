@@ -1,15 +1,17 @@
-##installing packages if not done yet
+##installing packages dependencies and language model if not done yet
 #install.packages("rvest")
 #install.packages("dplyr")
 #install.packages("utf8")
 #install.packages("spacyr")
+#spacy_install()
+#spacy_download_langmodel('en') 
 #install.packages("syuzhet")
 #install.packages("ggplot2")
 #install.packages("tidytext")
-#install.packages("tidyverse
+#install.packages("tidyverse")
 #install.packages("textdata")
-install.packages("wordcloud")
-install.packages("RColorBrewer")
+#install.packages("wordcloud")
+#install.packages("RColorBrewer")
 
 #loading libraries
 library(rvest)
@@ -63,10 +65,6 @@ sum(thehillarticle_NFC != thehillarticle)
 nypostarticle <- gsub("[ ]{2,}", " ", nypostarticle)
 thehillarticle <- gsub("[ ]{2,}", " ", thehillarticle)
 
-#install spacy  and english language model
-spacy_install() 
-spacy_download_langmodel('en') 
-
 #Gets single non-empty sentences/phrases from the extracted paragraphs of NYPost article
 nypostarticlephrases <- spacy_tokenize(nypostarticle, what="sentence")
 v_nypostarticlephrases <- unlist(nypostarticlephrases)
@@ -78,9 +76,9 @@ length(v_nypostarticlephrases)
 #repeat for TheHill article
 thehillarticlephrases <- spacy_tokenize(thehillarticle, what ="sentence")
 v_thehillarticlephrases <- unlist(thehillarticlephrases)
-length(v_thehillarticlephrases) #44
+length(v_thehillarticlephrases) #47
 sum(v_thehillarticlephrases=="") #16 sentences empty
-v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")] #28 sentences
+v_thehillarticlephrases <- v_thehillarticlephrases[-which(v_thehillarticlephrases=="")] #31 sentences
 length(v_thehillarticlephrases)
 
 #obtaining sentiment scores for NYPost article and plotting them
